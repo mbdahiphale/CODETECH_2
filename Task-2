@@ -1,0 +1,47 @@
+# List of common ports to scan
+common_ports = [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1723, 3306, 3389, 5900, 8080]
+
+def scan_ports(target):
+    print(f"Scanning ports on {target}...")
+    open_ports = []
+    for port in common_ports:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socket.setdefaulttimeout(1)
+        result = sock.connect_ex((target, port))
+        if result == 0:
+            open_ports.append(port)
+        sock.close()
+    return open_ports
+
+def check_url_reachability(url):
+    print(f"Checking reachability of {url}...")
+    try:
+        # Open a socket to the given URL on port 80 (HTTP)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(5)
+        sock.connect((url, 80))
+        sock.send(b"HEAD / HTTP/1.1\r\nHost: " + url.encode() + b"\r\n\r\n")
+        response = sock.recv(1024)
+        sock.close()
+        if b"200 OK" in response:
+            return "URL is reachable"
+        else:
+            return "URL is not reachable"
+    except Exception as e:
+        return "URL is not reachable"
+
+def main():
+    target = input("Enter the target IP address: ").strip()
+    
+    # Network and Port Scanning
+    open_ports = scan_ports(target)
+    print(f"Open ports on {target}: {open_ports}")
+    
+    url = input("Enter the URL to check (without http:// or https://): ").strip()
+    
+    # URL Reachability Check
+    reachability = check_url_reachability(url)
+    print(reachability)
+
+if __name__ == "__main__":
+    main()
